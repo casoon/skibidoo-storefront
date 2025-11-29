@@ -1,0 +1,164 @@
+---
+// SEO Head Component
+// src/components/SEOHead.astro
+
+export interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  image?: string;
+  type?: "website" | "product" | "article";
+  noindex?: boolean;
+  // Product-specific
+  product?: {
+    name: string;
+    description: string;
+    sku: string;
+    price: number;
+    currency: string;
+    availability: "InStock" | "OutOfStock" | "PreOrder";
+    brand?: string;
+    category?: string;
+    images?: string[];
+    rating?: { value: number; count: number };
+  };
+  // Breadcrumbs
+  breadcrumbs?: Array<{ name: string; url: string }>;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  image = "/og-default.jpg",
+  type = "website",
+  noindex = false,
+  product,
+  breadcrumbs,
+} = Astro.props;
+
+const siteUrl = import.meta.env.SITE_URL || "https://skibidoo.shop";
+const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).href;
+const imageUrl = image.startsWith("http") ? image : new URL(image, siteUrl).href;
+
+// JSON-LD for Product
+const productJsonLd = product ? {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.name,
+  description: product.description,
+  sku: product.sku,
+  image: product.images || [imageUrl],
+  brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
+  category: product.category,
+  offers: {
+    "@type": "Offer",
+    price: product.price,
+    priceCurrency: product.currency,
+    availability: `https://schema.org/${product.availability}`,
+    url: canonicalUrl,
+  },
+  aggregateRating: product.rating ? {
+    "@type": "AggregateRating",
+    ratingValue: product.rating.value,
+    reviewCount: product.rating.count,
+  } : undefined,
+} : null;
+
+// JSON-LD for Breadcrumbs
+const breadcrumbJsonLd = breadcrumbs && breadcrumbs.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: breadcrumbs.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    item: new URL(item.url, siteUrl).href,
+  })),
+} : null;
+
+// JSON-LD for Organization (on homepage)
+const organizationJsonLd = Astro.url.pathname === "/" ? {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Skibidoo",
+  url: siteUrl,
+  logo: `${siteUrl}/logo.png`,
+  sameAs: [
+    "https://twitter.com/skibidoo",
+    "https://facebook.com/skibidoo",
+    "https://instagram.com/skibidoo",
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+49-XXX-XXXXXXX",
+    contactType: "customer service",
+    availableLanguage: ["German", "English"],
+  },
+} : null;
+
+// JSON-LD for WebSite with SearchAction
+const websiteJsonLd = Astro.url.pathname === "/" ? {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Skibidoo Shop",
+  url: siteUrl,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+} : null;
+---
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+<link rel="canonical" href={canonicalUrl} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type === "product" ? "product" : "website"} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:locale" content="de_DE" />
+<meta property="og:site_name" content="Skibidoo Shop" />
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={canonicalUrl} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={imageUrl} />
+
+<!-- Product specific Open Graph -->
+{product && (
+  <>
+    <meta property="product:price:amount" content={String(product.price)} />
+    <meta property="product:price:currency" content={product.currency} />
+    <meta property="product:availability" content={product.availability === "InStock" ? "in stock" : "out of stock"} />
+  </>
+)}
+
+<!-- JSON-LD Structured Data -->
+{productJsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(productJsonLd)} />
+)}
+
+{breadcrumbJsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+)}
+
+{organizationJsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(organizationJsonLd)} />
+)}
+
+{websiteJsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />
+)}

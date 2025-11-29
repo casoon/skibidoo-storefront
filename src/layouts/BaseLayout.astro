@@ -1,13 +1,40 @@
 ---
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import SEOHead from "@/components/SEOHead.astro";
 
 interface Props {
   title: string;
   description?: string;
+  canonical?: string;
+  image?: string;
+  type?: "website" | "product" | "article";
+  noindex?: boolean;
+  product?: {
+    name: string;
+    description: string;
+    sku: string;
+    price: number;
+    currency: string;
+    availability: "InStock" | "OutOfStock" | "PreOrder";
+    brand?: string;
+    category?: string;
+    images?: string[];
+    rating?: { value: number; count: number };
+  };
+  breadcrumbs?: Array<{ name: string; url: string }>;
 }
 
-const { title, description = "Ihr Online-Shop für hochwertige Produkte" } = Astro.props;
+const {
+  title,
+  description = "Ihr Online-Shop fuer hochwertige Produkte",
+  canonical,
+  image,
+  type = "website",
+  noindex = false,
+  product,
+  breadcrumbs,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -15,9 +42,24 @@ const { title, description = "Ihr Online-Shop für hochwertige Produkte" } = Ast
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
-    <title>{title} - Skibidoo Shop</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <SEOHead
+      title={`${title} - Skibidoo Shop`}
+      description={description}
+      canonical={canonical}
+      image={image}
+      type={type}
+      noindex={noindex}
+      product={product}
+      breadcrumbs={breadcrumbs}
+    />
+
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   </head>
   <body class="flex min-h-screen flex-col bg-gray-50" hx-boost="true">
@@ -40,7 +82,7 @@ const { title, description = "Ihr Online-Shop für hochwertige Produkte" } = Ast
       function showToast(message, type = "success") {
         const container = document.getElementById("toast-container");
         const toast = document.createElement("div");
-        toast.className = `rounded-lg px-4 py-3 shadow-lg text-white ${type === "success" ? "bg-green-500" : "bg-red-500"}`;
+        toast.className = "rounded-lg px-4 py-3 shadow-lg text-white " + (type === "success" ? "bg-green-500" : "bg-red-500");
         toast.textContent = message;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
