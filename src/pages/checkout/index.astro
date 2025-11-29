@@ -1,0 +1,259 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCart } from "@/lib/api";
+import { formatPrice } from "@/lib/format";
+
+const cartId = Astro.cookies.get("cartId")?.value;
+
+if (!cartId) {
+  return Astro.redirect("/cart");
+}
+
+let cart;
+try {
+  cart = await getCart(cartId);
+} catch {
+  return Astro.redirect("/cart");
+}
+
+if (!cart || cart.items.length === 0) {
+  return Astro.redirect("/cart");
+}
+---
+
+<BaseLayout title="Kasse">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <h1 class="mb-8 text-2xl font-bold text-gray-900">Kasse</h1>
+
+    <form action="/api/checkout" method="POST" class="grid gap-8 lg:grid-cols-3">
+      <div class="space-y-6 lg:col-span-2">
+        <!-- Contact -->
+        <section class="rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold">Kontakt</h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">E-Mail *</label>
+              <input
+                type="email"
+                name="email"
+                required
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Telefon</label>
+              <input
+                type="tel"
+                name="phone"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- Shipping Address -->
+        <section class="rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold">Lieferadresse</h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Vorname *</label>
+              <input type="text" name="shippingFirstName" required class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nachname *</label>
+              <input type="text" name="shippingLastName" required class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Firma</label>
+              <input type="text" name="shippingCompany" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Strasse und Hausnummer *</label>
+              <input type="text" name="shippingStreet" required class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">PLZ *</label>
+              <input type="text" name="shippingZip" required class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Stadt *</label>
+              <input type="text" name="shippingCity" required class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Land *</label>
+              <select name="shippingCountry" required class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2">
+                <option value="DE" selected>Deutschland</option>
+                <option value="AT">Oesterreich</option>
+                <option value="CH">Schweiz</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="mt-4 flex items-center gap-2">
+            <input type="checkbox" name="differentBilling" id="differentBilling" class="rounded border-gray-300" />
+            <span class="text-sm">Abweichende Rechnungsadresse</span>
+          </label>
+        </section>
+
+        <!-- Billing Address (hidden by default) -->
+        <section id="billing-section" class="hidden rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold">Rechnungsadresse</h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Vorname</label>
+              <input type="text" name="billingFirstName" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nachname</label>
+              <input type="text" name="billingLastName" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Firma</label>
+              <input type="text" name="billingCompany" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Strasse und Hausnummer</label>
+              <input type="text" name="billingStreet" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">PLZ</label>
+              <input type="text" name="billingZip" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Stadt</label>
+              <input type="text" name="billingCity" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Land</label>
+              <select name="billingCountry" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2">
+                <option value="DE" selected>Deutschland</option>
+                <option value="AT">Oesterreich</option>
+                <option value="CH">Schweiz</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Shipping Method -->
+        <section class="rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold">Versandart</h2>
+          <div class="space-y-3">
+            <label class="flex cursor-pointer items-center justify-between rounded-lg border p-4 hover:bg-gray-50">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="shippingMethod" value="standard" checked class="text-primary-600" />
+                <div>
+                  <p class="font-medium">Standardversand</p>
+                  <p class="text-sm text-gray-500">3-5 Werktage</p>
+                </div>
+              </div>
+              <span class="font-medium">4,99 EUR</span>
+            </label>
+            <label class="flex cursor-pointer items-center justify-between rounded-lg border p-4 hover:bg-gray-50">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="shippingMethod" value="express" class="text-primary-600" />
+                <div>
+                  <p class="font-medium">Expressversand</p>
+                  <p class="text-sm text-gray-500">1-2 Werktage</p>
+                </div>
+              </div>
+              <span class="font-medium">9,99 EUR</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Payment Method -->
+        <section class="rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold">Zahlungsart</h2>
+          <div class="space-y-3">
+            <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-4 hover:bg-gray-50">
+              <input type="radio" name="paymentMethod" value="stripe" checked class="text-primary-600" />
+              <div>
+                <p class="font-medium">Kreditkarte</p>
+                <p class="text-sm text-gray-500">Visa, Mastercard, American Express</p>
+              </div>
+            </label>
+            <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-4 hover:bg-gray-50">
+              <input type="radio" name="paymentMethod" value="paypal" class="text-primary-600" />
+              <div>
+                <p class="font-medium">PayPal</p>
+              </div>
+            </label>
+            <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-4 hover:bg-gray-50">
+              <input type="radio" name="paymentMethod" value="klarna" class="text-primary-600" />
+              <div>
+                <p class="font-medium">Klarna</p>
+                <p class="text-sm text-gray-500">Rechnung, Ratenzahlung</p>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <!-- Terms -->
+        <section class="rounded-lg bg-white p-6 shadow">
+          <label class="flex items-start gap-3">
+            <input type="checkbox" name="terms" required class="mt-1 rounded border-gray-300" />
+            <span class="text-sm text-gray-600">
+              Ich habe die <a href="/agb" class="text-primary-600 hover:underline">AGB</a> und die
+              <a href="/widerruf" class="text-primary-600 hover:underline">Widerrufsbelehrung</a> gelesen und akzeptiere diese. *
+            </span>
+          </label>
+        </section>
+      </div>
+
+      <!-- Order Summary -->
+      <div>
+        <div class="sticky top-24 rounded-lg bg-white p-6 shadow">
+          <h2 class="mb-4 text-lg font-semibold">Ihre Bestellung</h2>
+
+          <div class="max-h-64 space-y-4 overflow-y-auto">
+            {cart.items.map((item) => (
+              <div class="flex gap-3">
+                <div class="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-gray-100">
+                  {item.image && <img src={item.image} alt={item.productName} class="h-full w-full object-cover" />}
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">{item.productName}</p>
+                  <p class="text-sm text-gray-500">Menge: {item.quantity}</p>
+                </div>
+                <p class="text-sm font-medium">{formatPrice(item.totalPrice)}</p>
+              </div>
+            ))}
+          </div>
+
+          <div class="mt-6 space-y-3 border-t pt-4 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Zwischensumme</span>
+              <span>{formatPrice(cart.subtotal)}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Versand</span>
+              <span>4,99 EUR</span>
+            </div>
+            <div class="flex justify-between border-t pt-3 text-lg font-semibold">
+              <span>Gesamt</span>
+              <span>{formatPrice(cart.total + 499)}</span>
+            </div>
+            <p class="text-xs text-gray-500">inkl. MwSt.</p>
+          </div>
+
+          <button
+            type="submit"
+            class="mt-6 w-full rounded-lg bg-primary-600 py-3 font-semibold text-white hover:bg-primary-700"
+          >
+            Zahlungspflichtig bestellen
+          </button>
+
+          <p class="mt-4 text-center text-xs text-gray-500">
+            Mit Klick auf "Zahlungspflichtig bestellen" akzeptieren Sie unsere AGB.
+          </p>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script is:inline>
+    document.getElementById("differentBilling")?.addEventListener("change", function() {
+      document.getElementById("billing-section")?.classList.toggle("hidden", !this.checked);
+    });
+  </script>
+</BaseLayout>

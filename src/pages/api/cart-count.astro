@@ -1,0 +1,17 @@
+---
+const cartId = Astro.cookies.get("cartId")?.value;
+const API_URL = import.meta.env.API_URL || "http://localhost:3000";
+
+let count = 0;
+
+if (cartId) {
+  try {
+    const response = await fetch(`${API_URL}/api/cart?cartId=${cartId}`);
+    if (response.ok) {
+      const cart = await response.json();
+      count = cart.itemCount || 0;
+    }
+  } catch {}
+}
+---
+{count}

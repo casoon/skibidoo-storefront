@@ -1,0 +1,54 @@
+---
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Ihr Online-Shop für hochwertige Produkte" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} - Skibidoo Shop</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  </head>
+  <body class="flex min-h-screen flex-col bg-gray-50" hx-boost="true">
+    <Header />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script is:inline>
+      document.body.addEventListener("htmx:afterSwap", function(evt) {
+        if (evt.detail.target.id === "cart-count") {
+          evt.detail.target.classList.add("animate-bounce");
+          setTimeout(() => evt.detail.target.classList.remove("animate-bounce"), 500);
+        }
+      });
+
+      function showToast(message, type = "success") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `rounded-lg px-4 py-3 shadow-lg text-white ${type === "success" ? "bg-green-500" : "bg-red-500"}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      document.body.addEventListener("showToast", function(evt) {
+        showToast(evt.detail.message, evt.detail.type);
+      });
+    </script>
+  </body>
+</html>

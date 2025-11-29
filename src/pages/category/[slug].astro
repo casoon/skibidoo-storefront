@@ -1,0 +1,149 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ProductCard from "@/components/ProductCard.astro";
+import { fetchProducts, fetchCategory } from "@/lib/api";
+
+const { slug } = Astro.params;
+const page = Number(Astro.url.searchParams.get("page") || "1");
+const sort = Astro.url.searchParams.get("sort") || "default";
+const limit = 12;
+
+let category = null;
+let categoryId: string | undefined;
+
+if (slug !== "alle") {
+  category = await fetchCategory(slug!);
+  if (!category) {
+    return Astro.redirect("/404");
+  }
+  categoryId = category.id;
+}
+
+const { products, total } = await fetchProducts({ page, limit, categoryId });
+const totalPages = Math.ceil(total / limit);
+---
+
+<BaseLayout title={category?.name || "Alle Produkte"}>
+  <div class="mx-auto max-w-7xl px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-sm text-gray-500">
+      <a href="/" class="hover:text-primary-600">Startseite</a>
+      <span class="mx-2">/</span>
+      <span class="text-gray-900">{category?.name || "Alle Produkte"}</span>
+    </nav>
+
+    <div class="flex gap-8">
+      <!-- Sidebar Filters -->
+      <aside class="hidden w-64 flex-shrink-0 lg:block">
+        <div class="sticky top-24 space-y-6">
+          <div>
+            <h3 class="mb-3 font-semibold text-gray-900">Sortierung</h3>
+            <select
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              hx-get={`/category/${slug}`}
+              hx-target="#product-grid"
+              hx-swap="outerHTML"
+              hx-push-url="true"
+              name="sort"
+            >
+              <option value="default" selected={sort === "default"}>Beliebtheit</option>
+              <option value="price-asc" selected={sort === "price-asc"}>Preis aufsteigend</option>
+              <option value="price-desc" selected={sort === "price-desc"}>Preis absteigend</option>
+              <option value="name-asc" selected={sort === "name-asc"}>Name A-Z</option>
+              <option value="newest" selected={sort === "newest"}>Neueste zuerst</option>
+            </select>
+          </div>
+
+          <div>
+            <h3 class="mb-3 font-semibold text-gray-900">Preis</h3>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" class="rounded border-gray-300" />
+                <span>Bis 25 EUR</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" class="rounded border-gray-300" />
+                <span>25 - 50 EUR</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" class="rounded border-gray-300" />
+                <span>50 - 100 EUR</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" class="rounded border-gray-300" />
+                <span>Über 100 EUR</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="mb-3 font-semibold text-gray-900">Verfügbarkeit</h3>
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" class="rounded border-gray-300" checked />
+              <span>Nur verfügbare Artikel</span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Product Grid -->
+      <div class="flex-1">
+        <div class="mb-6 flex items-center justify-between">
+          <h1 class="text-2xl font-bold text-gray-900">{category?.name || "Alle Produkte"}</h1>
+          <p class="text-sm text-gray-500">{total} Produkte</p>
+        </div>
+
+        {category?.description && (
+          <p class="mb-6 text-gray-600">{category.description}</p>
+        )}
+
+        <div id="product-grid" class="grid grid-cols-2 gap-6 md:grid-cols-3">
+          {products.map((product) => (
+            <ProductCard product={product} />
+          ))}
+        </div>
+
+        {products.length === 0 && (
+          <div class="py-12 text-center text-gray-500">
+            <p>Keine Produkte gefunden.</p>
+          </div>
+        )}
+
+        <!-- Pagination -->
+        {totalPages > 1 && (
+          <nav class="mt-8 flex items-center justify-center gap-2">
+            {page > 1 && (
+              <a
+                href={`/category/${slug}?page=${page - 1}`}
+                class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Zurück
+              </a>
+            )}
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <a
+                href={`/category/${slug}?page=${p}`}
+                class:list={[
+                  "rounded-lg px-4 py-2 text-sm",
+                  p === page ? "bg-primary-600 text-white" : "border hover:bg-gray-50",
+                ]}
+              >
+                {p}
+              </a>
+            ))}
+
+            {page < totalPages && (
+              <a
+                href={`/category/${slug}?page=${page + 1}`}
+                class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Weiter
+              </a>
+            )}
+          </nav>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

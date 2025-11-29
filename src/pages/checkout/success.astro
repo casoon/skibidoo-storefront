@@ -1,0 +1,36 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const orderNumber = Astro.url.searchParams.get("order");
+---
+
+<BaseLayout title="Bestellung erfolgreich">
+  <div class="mx-auto max-w-2xl px-4 py-16 text-center">
+    <div class="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-green-600">
+      <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900">Vielen Dank fuer Ihre Bestellung!</h1>
+
+    {orderNumber && (
+      <p class="mt-4 text-lg text-gray-600">
+        Ihre Bestellnummer: <span class="font-semibold">{orderNumber}</span>
+      </p>
+    )}
+
+    <p class="mt-4 text-gray-600">
+      Sie erhalten in Kuerze eine Bestaetigung per E-Mail.
+    </p>
+
+    <div class="mt-8 space-y-4">
+      <a
+        href="/"
+        class="inline-block rounded-lg bg-primary-600 px-8 py-3 font-semibold text-white hover:bg-primary-700"
+      >
+        Zurueck zur Startseite
+      </a>
+    </div>
+  </div>
+</BaseLayout>

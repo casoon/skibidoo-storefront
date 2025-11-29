@@ -1,0 +1,69 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ProductCard from "@/components/ProductCard.astro";
+import { fetchProducts } from "@/lib/api";
+
+const query = Astro.url.searchParams.get("q") || "";
+const page = Number(Astro.url.searchParams.get("page") || "1");
+
+let products: any[] = [];
+let total = 0;
+
+if (query) {
+  const result = await fetchProducts({ search: query, page, limit: 12 });
+  products = result.products;
+  total = result.total;
+}
+---
+
+<BaseLayout title={query ? `Suche: ${query}` : "Suche"}>
+  <div class="mx-auto max-w-7xl px-4 py-8">
+    <div class="mb-8">
+      <form action="/search" method="get" class="mx-auto max-w-2xl">
+        <div class="relative">
+          <input
+            type="search"
+            name="q"
+            value={query}
+            placeholder="Produkte suchen..."
+            autofocus
+            class="w-full rounded-lg border border-gray-300 py-4 pl-6 pr-12 text-lg focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          />
+          <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {query && (
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">
+          {total > 0 ? `${total} Ergebnisse fuer "${query}"` : `Keine Ergebnisse fuer "${query}"`}
+        </h1>
+      </div>
+    )}
+
+    {products.length > 0 ? (
+      <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
+        {products.map((product) => (
+          <ProductCard product={product} />
+        ))}
+      </div>
+    ) : query ? (
+      <div class="py-12 text-center">
+        <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <p class="mt-4 text-gray-600">Keine Produkte gefunden.</p>
+        <p class="mt-2 text-sm text-gray-500">Versuchen Sie es mit anderen Suchbegriffen.</p>
+      </div>
+    ) : (
+      <div class="py-12 text-center">
+        <p class="text-gray-600">Geben Sie einen Suchbegriff ein.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

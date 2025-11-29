@@ -1,0 +1,10 @@
+---
+import { fetchCategories } from "@/lib/api";
+
+const categories = await fetchCategories();
+---
+
+<li><a href="/category/alle" class="whitespace-nowrap text-gray-600 hover:text-primary-600">Alle Produkte</a></li>
+{categories.map((category) => (
+  <li><a href={`/category/${category.slug}`} class="whitespace-nowrap text-gray-600 hover:text-primary-600">{category.name}</a></li>
+))}
