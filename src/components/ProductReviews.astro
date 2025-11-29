@@ -1,0 +1,159 @@
+---
+interface Props {
+  productId: string;
+  averageRating?: number;
+  totalReviews?: number;
+}
+
+const { productId, averageRating = 4.5, totalReviews = 24 } = Astro.props;
+
+const reviews = [
+  { id: "1", author: "Maria S.", rating: 5, date: "25.11.2024", title: "Super Qualitaet!", text: "Sehr zufrieden mit dem Produkt. Die Qualitaet ist hervorragend und die Lieferung war schnell.", verified: true },
+  { id: "2", author: "Thomas K.", rating: 4, date: "20.11.2024", title: "Gutes Preis-Leistungs-Verhaeltnis", text: "Insgesamt ein gutes Produkt. Nur die Farbe ist etwas anders als auf dem Bild.", verified: true },
+  { id: "3", author: "Anna L.", rating: 5, date: "15.11.2024", title: "Empfehlenswert", text: "Genau wie beschrieben. Wuerde ich wieder kaufen.", verified: false },
+];
+
+const ratingDistribution = [
+  { stars: 5, count: 15 },
+  { stars: 4, count: 6 },
+  { stars: 3, count: 2 },
+  { stars: 2, count: 1 },
+  { stars: 1, count: 0 },
+];
+---
+
+<div class="mt-12 border-t pt-8" id="reviews">
+  <h2 class="text-xl font-bold">Kundenbewertungen</h2>
+
+  <div class="mt-6 grid gap-8 lg:grid-cols-3">
+    <!-- Rating Summary -->
+    <div class="rounded-lg bg-gray-50 p-6">
+      <div class="text-center">
+        <p class="text-5xl font-bold">{averageRating.toFixed(1).replace(".", ",")}</p>
+        <div class="mt-2 flex justify-center gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <svg class={`h-5 w-5 ${star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`} fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+        </div>
+        <p class="mt-1 text-sm text-gray-500">{totalReviews} Bewertungen</p>
+      </div>
+
+      <div class="mt-6 space-y-2">
+        {ratingDistribution.map((item) => (
+          <div class="flex items-center gap-2">
+            <span class="w-8 text-sm text-gray-600">{item.stars} <span class="text-yellow-400">★</span></span>
+            <div class="flex-1 overflow-hidden rounded-full bg-gray-200">
+              <div class="h-2 rounded-full bg-yellow-400" style={`width: ${(item.count / totalReviews) * 100}%`}></div>
+            </div>
+            <span class="w-8 text-right text-sm text-gray-500">{item.count}</span>
+          </div>
+        ))}
+      </div>
+
+      <button
+        class="mt-6 w-full rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
+        onclick="document.getElementById(`review-form`).classList.toggle(`hidden`)"
+      >
+        Bewertung schreiben
+      </button>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="lg:col-span-2">
+      <!-- Review Form (hidden by default) -->
+      <div id="review-form" class="mb-6 hidden rounded-lg border bg-white p-6">
+        <h3 class="font-semibold">Ihre Bewertung</h3>
+        <form hx-post={`/api/products/${productId}/reviews`} hx-swap="outerHTML" hx-target="#reviews" class="mt-4 space-y-4">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-gray-700">Bewertung</label>
+            <div class="flex gap-1" id="star-rating">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button type="button" class="star-btn text-gray-300 hover:text-yellow-400" data-rating={star}>
+                  <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </button>
+              ))}
+              <input type="hidden" name="rating" id="rating-input" value="5" required />
+            </div>
+          </div>
+
+          <div>
+            <label for="review-title" class="mb-1 block text-sm font-medium text-gray-700">Titel</label>
+            <input type="text" id="review-title" name="title" required class="w-full rounded border-gray-300" placeholder="Kurze Zusammenfassung" />
+          </div>
+
+          <div>
+            <label for="review-text" class="mb-1 block text-sm font-medium text-gray-700">Ihre Bewertung</label>
+            <textarea id="review-text" name="text" rows="4" required class="w-full rounded border-gray-300" placeholder="Was hat Ihnen gefallen oder nicht gefallen?"></textarea>
+          </div>
+
+          <div class="flex gap-2">
+            <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Absenden</button>
+            <button type="button" onclick="document.getElementById(`review-form`).classList.add(`hidden`)" class="rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-50">Abbrechen</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Reviews -->
+      <div class="space-y-6">
+        {reviews.map((review) => (
+          <div class="border-b pb-6">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <div class="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg class={`h-4 w-4 ${star <= review.rating ? "text-yellow-400" : "text-gray-300"}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span class="font-medium">{review.title}</span>
+                </div>
+                <div class="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                  <span>{review.author}</span>
+                  <span>-</span>
+                  <span>{review.date}</span>
+                  {review.verified && (
+                    <span class="flex items-center gap-1 text-green-600">
+                      <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                      Verifizierter Kauf
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-gray-600">{review.text}</p>
+            <div class="mt-3 flex gap-4 text-sm">
+              <button class="flex items-center gap-1 text-gray-500 hover:text-gray-700">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
+                Hilfreich (3)
+              </button>
+              <button class="text-gray-500 hover:text-gray-700">Melden</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {reviews.length > 3 && (
+        <button class="mt-6 w-full rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-50">Mehr Bewertungen laden</button>
+      )}
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  document.querySelectorAll(".star-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const rating = this.dataset.rating;
+      document.getElementById("rating-input").value = rating;
+      document.querySelectorAll(".star-btn").forEach((b, i) => {
+        b.classList.toggle("text-yellow-400", i < rating);
+        b.classList.toggle("text-gray-300", i >= rating);
+      });
+    });
+  });
+</script>

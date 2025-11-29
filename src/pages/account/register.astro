@@ -1,0 +1,74 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Registrieren">
+  <div class="mx-auto max-w-md px-4 py-12">
+    <div class="rounded-lg bg-white p-8 shadow">
+      <h1 class="mb-6 text-2xl font-bold text-center">Konto erstellen</h1>
+
+      <form id="register-form" hx-post="/api/auth/register" hx-swap="none" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="mb-1 block text-sm font-medium text-gray-700">Vorname</label>
+            <input type="text" id="firstName" name="firstName" required class="w-full rounded border-gray-300" />
+          </div>
+          <div>
+            <label for="lastName" class="mb-1 block text-sm font-medium text-gray-700">Nachname</label>
+            <input type="text" id="lastName" name="lastName" required class="w-full rounded border-gray-300" />
+          </div>
+        </div>
+
+        <div>
+          <label for="email" class="mb-1 block text-sm font-medium text-gray-700">E-Mail</label>
+          <input type="email" id="email" name="email" required class="w-full rounded border-gray-300" />
+        </div>
+
+        <div>
+          <label for="password" class="mb-1 block text-sm font-medium text-gray-700">Passwort</label>
+          <input type="password" id="password" name="password" required minlength="8" class="w-full rounded border-gray-300" />
+          <p class="mt-1 text-xs text-gray-500">Mindestens 8 Zeichen</p>
+        </div>
+
+        <div>
+          <label for="passwordConfirm" class="mb-1 block text-sm font-medium text-gray-700">Passwort bestaetigen</label>
+          <input type="password" id="passwordConfirm" name="passwordConfirm" required class="w-full rounded border-gray-300" />
+        </div>
+
+        <div>
+          <label class="flex items-start gap-2">
+            <input type="checkbox" name="newsletter" class="mt-1 rounded border-gray-300 text-primary-600" />
+            <span class="text-sm text-gray-600">Ich moechte den Newsletter erhalten</span>
+          </label>
+        </div>
+
+        <div>
+          <label class="flex items-start gap-2">
+            <input type="checkbox" name="terms" required class="mt-1 rounded border-gray-300 text-primary-600" />
+            <span class="text-sm text-gray-600">Ich akzeptiere die <a href="/agb" class="text-primary-600 hover:underline">AGB</a> und <a href="/datenschutz" class="text-primary-600 hover:underline">Datenschutzerklaerung</a></span>
+          </label>
+        </div>
+
+        <button type="submit" class="w-full rounded-lg bg-primary-600 px-4 py-3 font-medium text-white hover:bg-primary-700">Registrieren</button>
+
+        <div id="register-error" class="hidden rounded-lg bg-red-50 p-3 text-sm text-red-600"></div>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">Bereits ein Konto? <a href="/account/login" class="text-primary-600 hover:underline">Anmelden</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    document.getElementById("register-form").addEventListener("htmx:afterRequest", function(evt) {
+      if (evt.detail.successful) {
+        window.location.href = "/account?registered=1";
+      } else {
+        const errorDiv = document.getElementById("register-error");
+        errorDiv.textContent = "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.";
+        errorDiv.classList.remove("hidden");
+      }
+    });
+  </script>
+</BaseLayout>

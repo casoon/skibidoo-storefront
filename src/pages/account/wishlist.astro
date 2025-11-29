@@ -1,0 +1,83 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const wishlistItems = [
+  { id: "1", name: "Lederjacke Schwarz", price: 299.00, image: "/images/products/jacket.jpg", inStock: true },
+  { id: "2", name: "Sneaker Premium Weiss", price: 129.00, image: "/images/products/sneaker.jpg", inStock: true },
+  { id: "3", name: "Wollpullover Grau", price: 89.00, image: "/images/products/pullover.jpg", inStock: false },
+];
+---
+
+<BaseLayout title="Wunschliste">
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <div class="mb-6 flex items-center gap-4">
+      <a href="/account" class="text-gray-400 hover:text-gray-600">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+      </a>
+      <h1 class="text-2xl font-bold">Meine Wunschliste</h1>
+      <span class="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">{wishlistItems.length} Artikel</span>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {wishlistItems.map((item) => (
+        <div class="group rounded-lg bg-white shadow">
+          <div class="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100">
+            <div class="absolute inset-0 flex items-center justify-center text-gray-300">
+              <svg class="h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>
+            <button
+              class="absolute right-2 top-2 rounded-full bg-white p-2 text-red-500 shadow hover:bg-red-50"
+              hx-delete={`/api/wishlist/${item.id}`}
+              hx-target="closest .group"
+              hx-swap="outerHTML"
+              hx-confirm="Artikel von der Wunschliste entfernen?"
+            >
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+            </button>
+          </div>
+
+          <div class="p-4">
+            <h3 class="font-medium">{item.name}</h3>
+            <p class="mt-1 text-lg font-semibold">{item.price.toFixed(2).replace(".", ",")} EUR</p>
+
+            {item.inStock ? (
+              <button
+                class="mt-4 w-full rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
+                hx-post="/api/cart/add"
+                hx-vals={JSON.stringify({ productId: item.id, quantity: 1 })}
+                hx-swap="none"
+              >
+                In den Warenkorb
+              </button>
+            ) : (
+              <div class="mt-4">
+                <p class="mb-2 text-sm text-red-600">Derzeit nicht verfuegbar</p>
+                <button class="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-600 hover:bg-gray-50">Benachrichtigen</button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {wishlistItems.length === 0 && (
+      <div class="rounded-lg bg-white p-12 text-center shadow">
+        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <p class="mt-4 text-gray-500">Ihre Wunschliste ist leer.</p>
+        <a href="/products" class="mt-4 inline-block rounded-lg bg-primary-600 px-6 py-2 text-white hover:bg-primary-700">Produkte entdecken</a>
+      </div>
+    )}
+
+    {wishlistItems.length > 0 && (
+      <div class="mt-8 flex justify-center">
+        <button
+          class="rounded-lg border border-primary-600 px-6 py-2 text-primary-600 hover:bg-primary-50"
+          hx-post="/api/cart/add-all-wishlist"
+          hx-swap="none"
+        >
+          Alle verfuegbaren Artikel in den Warenkorb
+        </button>
+      </div>
+    )}
+  </div>
+</BaseLayout>

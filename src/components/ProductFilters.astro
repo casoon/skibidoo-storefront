@@ -1,0 +1,212 @@
+---
+interface Props {
+  categories?: { id: string; name: string; count: number }[];
+  priceRange?: { min: number; max: number };
+  colors?: { id: string; name: string; hex: string; count: number }[];
+  sizes?: { id: string; name: string; count: number }[];
+  currentFilters?: Record<string, string | string[]>;
+}
+
+const {
+  categories = [
+    { id: "1", name: "T-Shirts", count: 45 },
+    { id: "2", name: "Hosen", count: 32 },
+    { id: "3", name: "Jacken", count: 18 },
+    { id: "4", name: "Schuhe", count: 27 },
+    { id: "5", name: "Accessoires", count: 56 },
+  ],
+  priceRange = { min: 0, max: 500 },
+  colors = [
+    { id: "black", name: "Schwarz", hex: "#000000", count: 89 },
+    { id: "white", name: "Weiss", hex: "#FFFFFF", count: 67 },
+    { id: "blue", name: "Blau", hex: "#3B82F6", count: 45 },
+    { id: "red", name: "Rot", hex: "#EF4444", count: 23 },
+    { id: "green", name: "Gruen", hex: "#22C55E", count: 34 },
+    { id: "gray", name: "Grau", hex: "#6B7280", count: 56 },
+  ],
+  sizes = [
+    { id: "xs", name: "XS", count: 12 },
+    { id: "s", name: "S", count: 45 },
+    { id: "m", name: "M", count: 67 },
+    { id: "l", name: "L", count: 54 },
+    { id: "xl", name: "XL", count: 38 },
+    { id: "xxl", name: "XXL", count: 21 },
+  ],
+  currentFilters = {},
+} = Astro.props;
+---
+
+<aside class="space-y-6">
+  <!-- Mobile Filter Toggle -->
+  <div class="lg:hidden">
+    <button
+      type="button"
+      class="flex w-full items-center justify-between rounded-lg border border-gray-300 px-4 py-3"
+      onclick="document.getElementById(`filter-panel`).classList.toggle(`hidden`)"
+    >
+      <span class="font-medium">Filter</span>
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+    </button>
+  </div>
+
+  <div id="filter-panel" class="hidden space-y-6 lg:block">
+    <!-- Categories -->
+    <div class="rounded-lg border bg-white p-4">
+      <h3 class="mb-3 font-semibold">Kategorien</h3>
+      <div class="space-y-2">
+        {categories.map((cat) => (
+          <label class="flex cursor-pointer items-center justify-between">
+            <span class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="category"
+                value={cat.id}
+                class="rounded border-gray-300 text-primary-600"
+                hx-get="/api/products"
+                hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort]"
+                hx-target="#product-grid"
+                hx-swap="innerHTML"
+                hx-trigger="change"
+              />
+              <span class="text-sm">{cat.name}</span>
+            </span>
+            <span class="text-xs text-gray-400">({cat.count})</span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Price Range -->
+    <div class="rounded-lg border bg-white p-4">
+      <h3 class="mb-3 font-semibold">Preis</h3>
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            name="minPrice"
+            placeholder="Min"
+            min="0"
+            class="w-full rounded border-gray-300 text-sm"
+            hx-get="/api/products"
+            hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort]"
+            hx-target="#product-grid"
+            hx-swap="innerHTML"
+            hx-trigger="change delay:500ms"
+          />
+          <span class="text-gray-400">-</span>
+          <input
+            type="number"
+            name="maxPrice"
+            placeholder="Max"
+            min="0"
+            class="w-full rounded border-gray-300 text-sm"
+            hx-get="/api/products"
+            hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort]"
+            hx-target="#product-grid"
+            hx-swap="innerHTML"
+            hx-trigger="change delay:500ms"
+          />
+        </div>
+        <div class="flex gap-2 text-xs">
+          <button type="button" class="rounded border px-2 py-1 hover:bg-gray-50" onclick="setPrice(0, 50)">bis 50 EUR</button>
+          <button type="button" class="rounded border px-2 py-1 hover:bg-gray-50" onclick="setPrice(50, 100)">50-100 EUR</button>
+          <button type="button" class="rounded border px-2 py-1 hover:bg-gray-50" onclick="setPrice(100, 0)">ab 100 EUR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colors -->
+    <div class="rounded-lg border bg-white p-4">
+      <h3 class="mb-3 font-semibold">Farbe</h3>
+      <div class="flex flex-wrap gap-2">
+        {colors.map((color) => (
+          <label class="cursor-pointer" title={color.name}>
+            <input
+              type="checkbox"
+              name="color"
+              value={color.id}
+              class="peer sr-only"
+              hx-get="/api/products"
+              hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort]"
+              hx-target="#product-grid"
+              hx-swap="innerHTML"
+              hx-trigger="change"
+            />
+            <span
+              class="block h-8 w-8 rounded-full border-2 border-transparent ring-2 ring-gray-200 peer-checked:ring-primary-500"
+              style={`background-color: ${color.hex}; ${color.id === "white" ? "border-color: #e5e7eb;" : ""}`}
+            ></span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Sizes -->
+    <div class="rounded-lg border bg-white p-4">
+      <h3 class="mb-3 font-semibold">Groesse</h3>
+      <div class="flex flex-wrap gap-2">
+        {sizes.map((size) => (
+          <label class="cursor-pointer">
+            <input
+              type="checkbox"
+              name="size"
+              value={size.id}
+              class="peer sr-only"
+              hx-get="/api/products"
+              hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort]"
+              hx-target="#product-grid"
+              hx-swap="innerHTML"
+              hx-trigger="change"
+            />
+            <span class="flex h-10 w-10 items-center justify-center rounded border text-sm peer-checked:border-primary-500 peer-checked:bg-primary-50 peer-checked:text-primary-700 hover:border-gray-400">
+              {size.name}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="rounded-lg border bg-white p-4">
+      <h3 class="mb-3 font-semibold">Verfuegbarkeit</h3>
+      <label class="flex cursor-pointer items-center gap-2">
+        <input
+          type="checkbox"
+          name="inStock"
+          value="true"
+          class="rounded border-gray-300 text-primary-600"
+          hx-get="/api/products"
+          hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort], [name=inStock]:checked"
+          hx-target="#product-grid"
+          hx-swap="innerHTML"
+          hx-trigger="change"
+        />
+        <span class="text-sm">Nur verfuegbare Artikel</span>
+      </label>
+    </div>
+
+    <!-- Clear Filters -->
+    <button
+      type="button"
+      class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+      onclick="clearFilters()"
+    >
+      Alle Filter zuruecksetzen
+    </button>
+  </div>
+</aside>
+
+<script is:inline>
+  function setPrice(min, max) {
+    document.querySelector("[name=minPrice]").value = min || "";
+    document.querySelector("[name=maxPrice]").value = max || "";
+    htmx.trigger(document.querySelector("[name=minPrice]"), "change");
+  }
+
+  function clearFilters() {
+    document.querySelectorAll("[name=category], [name=color], [name=size], [name=inStock]").forEach(el => el.checked = false);
+    document.querySelector("[name=minPrice]").value = "";
+    document.querySelector("[name=maxPrice]").value = "";
+    htmx.trigger(document.querySelector("[name=minPrice]"), "change");
+  }
+</script>

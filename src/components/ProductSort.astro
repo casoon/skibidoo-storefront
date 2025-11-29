@@ -1,0 +1,84 @@
+---
+interface Props {
+  currentSort?: string;
+  totalProducts?: number;
+  currentPage?: number;
+  totalPages?: number;
+}
+
+const {
+  currentSort = "relevance",
+  totalProducts = 156,
+  currentPage = 1,
+  totalPages = 13,
+} = Astro.props;
+
+const sortOptions = [
+  { value: "relevance", label: "Relevanz" },
+  { value: "price_asc", label: "Preis aufsteigend" },
+  { value: "price_desc", label: "Preis absteigend" },
+  { value: "newest", label: "Neueste zuerst" },
+  { value: "bestseller", label: "Bestseller" },
+  { value: "rating", label: "Beste Bewertung" },
+];
+---
+
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <p class="text-sm text-gray-600">
+    <span class="font-medium">{totalProducts}</span> Produkte gefunden
+  </p>
+
+  <div class="flex items-center gap-4">
+    <!-- Sort -->
+    <div class="flex items-center gap-2">
+      <label for="sort" class="text-sm text-gray-600">Sortieren:</label>
+      <select
+        id="sort"
+        name="sort"
+        class="rounded border-gray-300 text-sm"
+        hx-get="/api/products"
+        hx-include="[name=category]:checked, [name=color]:checked, [name=size]:checked, [name=minPrice], [name=maxPrice], [name=sort]"
+        hx-target="#product-grid"
+        hx-swap="innerHTML"
+        hx-trigger="change"
+      >
+        {sortOptions.map((opt) => (
+          <option value={opt.value} selected={opt.value === currentSort}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="hidden items-center gap-1 rounded-lg border p-1 sm:flex">
+      <button
+        type="button"
+        class="rounded p-1.5 hover:bg-gray-100"
+        onclick="setView(`grid`)"
+        title="Rasteransicht"
+      >
+        <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+      </button>
+      <button
+        type="button"
+        class="rounded p-1.5 hover:bg-gray-100"
+        onclick="setView(`list`)"
+        title="Listenansicht"
+      >
+        <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  function setView(view) {
+    const grid = document.getElementById("product-grid");
+    if (view === "list") {
+      grid.classList.remove("grid-cols-2", "md:grid-cols-3", "lg:grid-cols-4");
+      grid.classList.add("grid-cols-1");
+    } else {
+      grid.classList.remove("grid-cols-1");
+      grid.classList.add("grid-cols-2", "md:grid-cols-3", "lg:grid-cols-4");
+    }
+  }
+</script>
