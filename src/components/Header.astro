@@ -16,12 +16,17 @@ const cartId = Astro.cookies.get("cartId")?.value;
             name="q"
             placeholder="Produkte suchen..."
             class="w-full rounded-lg border border-gray-300 py-2 pl-4 pr-10 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            hx-get="/api/search/autocomplete"
+            hx-trigger="keyup changed delay:300ms"
+            hx-target="#search-results"
+            hx-swap="innerHTML"
           />
           <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
+          <div id="search-results" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border hidden"></div>
         </form>
       </div>
 
@@ -33,7 +38,12 @@ const cartId = Astro.cookies.get("cartId")?.value;
           </svg>
         </a>
 
-        <a href="/cart" class="relative text-gray-600 hover:text-gray-900">
+        <!-- Cart Button - opens sidebar -->
+        <button 
+          @click="cartOpen = true" 
+          class="relative text-gray-600 hover:text-gray-900"
+          aria-label="Warenkorb oeffnen"
+        >
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
@@ -41,10 +51,10 @@ const cartId = Astro.cookies.get("cartId")?.value;
             id="cart-count"
             class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-xs text-white"
             hx-get="/api/cart-count"
-            hx-trigger="load"
+            hx-trigger="load, cartUpdated from:body"
             hx-swap="innerHTML"
           >0</span>
-        </a>
+        </button>
       </div>
     </div>
   </div>

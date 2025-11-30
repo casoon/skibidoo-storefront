@@ -9,20 +9,27 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   let cartId = cookies.get("cartId")?.value;
 
-  const response = await fetch(`${API_URL}/api/cart/add`, {
+  const response = await fetch(`${API_URL}/api/v1/cart/add`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ cartId, productId, quantity }),
   });
 
   if (!response.ok) {
-    return new Response("0", { status: 200 });
+    return new Response("0", { 
+      status: 200,
+      headers: {
+        "HX-Trigger": JSON.stringify({
+          showToast: { message: "Fehler beim Hinzufuegen", type: "error" }
+        }),
+      },
+    });
   }
 
   const cart = await response.json();
 
-  if (!cartId && cart.id) {
-    cookies.set("cartId", cart.id, {
+  if (!cartId && cart.data?.id) {
+    cookies.set("cartId", cart.data.id, {
       path: "/",
       httpOnly: true,
       secure: import.meta.env.PROD,
@@ -30,11 +37,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  return new Response(String(cart.itemCount || 0), {
+  return new Response(String(cart.data?.itemCount || 0), {
     status: 200,
     headers: {
       "HX-Trigger": JSON.stringify({
-        showToast: { message: "Produkt hinzugefuegt", type: "success" }
+        showToast: { message: "Produkt hinzugefuegt", type: "success" },
+        cartUpdated: true
       }),
     },
   });

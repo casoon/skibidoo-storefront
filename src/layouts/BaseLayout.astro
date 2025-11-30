@@ -61,14 +61,66 @@ const {
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
   </head>
-  <body class="flex min-h-screen flex-col bg-gray-50" hx-boost="true">
+  <body class="flex min-h-screen flex-col bg-gray-50" hx-boost="true" x-data="{ cartOpen: false }">
     <Header />
     <main class="flex-1">
       <slot />
     </main>
     <Footer />
 
+    <!-- Cart Sidebar -->
+    <div 
+      x-show="cartOpen" 
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 z-40 bg-black/50"
+      @click="cartOpen = false"
+      x-cloak
+    ></div>
+    
+    <aside 
+      x-show="cartOpen"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="translate-x-full"
+      class="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl"
+      @click.outside="cartOpen = false"
+      x-cloak
+    >
+      <div class="flex h-full flex-col">
+        <div class="flex items-center justify-between border-b p-4">
+          <h2 class="text-lg font-semibold">Warenkorb</h2>
+          <button @click="cartOpen = false" class="p-2 hover:bg-gray-100 rounded-lg">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div 
+          id="cart-sidebar-content" 
+          class="flex-1 overflow-y-auto p-4"
+          hx-get="/api/fragments/cart-sidebar"
+          hx-trigger="load, cartUpdated from:body"
+          hx-swap="innerHTML"
+        >
+          <div class="flex items-center justify-center h-full text-gray-400">
+            Laden...
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
     <script is:inline>
@@ -91,6 +143,17 @@ const {
       document.body.addEventListener("showToast", function(evt) {
         showToast(evt.detail.message, evt.detail.type);
       });
+
+      // Open cart sidebar when cartUpdated event fires
+      document.body.addEventListener("htmx:trigger", function(evt) {
+        if (evt.detail.name === "cartUpdated") {
+          Alpine.store("cart")?.open?.();
+        }
+      });
     </script>
+
+    <style>
+      [x-cloak] { display: none !important; }
+    </style>
   </body>
 </html>

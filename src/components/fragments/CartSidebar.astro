@@ -1,0 +1,96 @@
+---
+interface CartItem {
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
+interface Props {
+  items: CartItem[];
+  subtotal: number;
+  itemCount: number;
+}
+
+const { items = [], subtotal = 0, itemCount = 0 } = Astro.props;
+
+function formatPrice(cents: number): string {
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(cents / 100);
+}
+---
+
+{items.length === 0 ? (
+  <div class="flex flex-col items-center justify-center h-64 text-gray-500">
+    <svg class="h-16 w-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+    <p class="text-lg font-medium">Dein Warenkorb ist leer</p>
+    <p class="text-sm mt-1">Fuege Produkte hinzu</p>
+  </div>
+) : (
+  <>
+    <ul class="divide-y divide-gray-200">
+      {items.map((item) => (
+        <li class="py-4">
+          <div class="flex gap-4">
+            {item.image && (
+              <img 
+                src={item.image} 
+                alt={item.name}
+                class="h-20 w-20 rounded-lg object-cover bg-gray-100"
+              />
+            )}
+            <div class="flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 truncate">{item.name}</h3>
+              <p class="text-sm text-gray-600 mt-1">{formatPrice(item.price)}</p>
+              
+              <div class="flex items-center gap-2 mt-2">
+                <button 
+                  class="p-1 rounded border hover:bg-gray-100"
+                  hx-post="/api/cart/update"
+                  hx-vals={JSON.stringify({itemId: item.id, action: "decrement"})}
+                  hx-target="#cart-sidebar-content"
+                  hx-swap="innerHTML"
+                >-</button>
+                <span class="w-8 text-center">{item.quantity}</span>
+                <button 
+                  class="p-1 rounded border hover:bg-gray-100"
+                  hx-post="/api/cart/update"
+                  hx-vals={JSON.stringify({itemId: item.id, action: "increment"})}
+                  hx-target="#cart-sidebar-content"
+                  hx-swap="innerHTML"
+                >+</button>
+                
+                <button
+                  class="ml-auto p-1 text-red-500 hover:bg-red-50 rounded"
+                  hx-delete={`/api/cart/remove?itemId=${item.id}`}
+                  hx-target="#cart-sidebar-content"
+                  hx-swap="innerHTML"
+                >X</button>
+              </div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+    
+    <div class="border-t pt-4 mt-4">
+      <div class="flex justify-between text-lg font-semibold">
+        <span>Zwischensumme</span>
+        <span>{formatPrice(subtotal)}</span>
+      </div>
+      
+      <a 
+        href="/checkout" 
+        class="mt-4 block w-full rounded-lg bg-blue-600 py-3 text-center font-semibold text-white hover:bg-blue-700"
+      >
+        Zur Kasse ({itemCount})
+      </a>
+    </div>
+  </>
+)}
