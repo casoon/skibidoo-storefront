@@ -1,0 +1,80 @@
+---
+// Lazy Loading Image Component
+// src/components/LazyImage.astro
+
+interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+  sizes?: string;
+  priority?: boolean;
+}
+
+const { 
+  src, 
+  alt, 
+  width, 
+  height, 
+  class: className = "",
+  sizes = "100vw",
+  priority = false,
+} = Astro.props;
+
+// Generate srcset for responsive images
+const generateSrcSet = (baseSrc: string) => {
+  const widths = [320, 640, 768, 1024, 1280, 1920];
+  // For external URLs or already optimized, return as-is
+  if (baseSrc.startsWith("http") || baseSrc.includes(".webp") || baseSrc.includes(".avif")) {
+    return baseSrc;
+  }
+  return widths
+    .map((w) => `${baseSrc}?w=${w} ${w}w`)
+    .join(", ");
+};
+
+const srcSet = generateSrcSet(src);
+const loadingAttr = priority ? "eager" : "lazy";
+const decodingAttr = priority ? "sync" : "async";
+---
+
+<picture class={className}>
+  {src.includes(".") && !src.includes(".svg") && (
+    <>
+      <source
+        type="image/avif"
+        srcset={src.replace(/\.(jpg|jpeg|png)$/i, ".avif")}
+        sizes={sizes}
+      />
+      <source
+        type="image/webp"
+        srcset={src.replace(/\.(jpg|jpeg|png)$/i, ".webp")}
+        sizes={sizes}
+      />
+    </>
+  )}
+  <img
+    src={src}
+    srcset={srcSet}
+    sizes={sizes}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loadingAttr}
+    decoding={decodingAttr}
+    class={`transition-opacity duration-300 ${className}`}
+    onload="this.style.opacity=1"
+    style="opacity: 0"
+  />
+</picture>
+
+<style>
+  img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  img[data-loaded="true"] {
+    opacity: 1;
+  }
+</style>

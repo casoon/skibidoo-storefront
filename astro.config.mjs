@@ -55,7 +55,7 @@ export default defineConfig({
               cacheName: "api-cache",
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60, // 1 hour
+                maxAgeSeconds: 60 * 60,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -69,7 +69,7 @@ export default defineConfig({
               cacheName: "image-cache",
               expiration: {
                 maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },
@@ -86,5 +86,37 @@ export default defineConfig({
         "@": "/src",
       },
     },
+    build: {
+      // Code splitting configuration
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Vendor chunk for external dependencies
+            vendor: ["htmx.org"],
+            // Alpine.js in its own chunk
+            alpine: ["alpinejs"],
+          },
+        },
+      },
+      // Increase chunk size warning limit
+      chunkSizeWarningLimit: 1000,
+      // CSS code splitting
+      cssCodeSplit: true,
+      // Minification
+      minify: "esbuild",
+      // Target modern browsers
+      target: "es2022",
+    },
+    // Optimize deps
+    optimizeDeps: {
+      include: ["htmx.org", "alpinejs"],
+    },
   },
+  // Prefetch configuration
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: "viewport",
+  },
+  // Compression
+  compressHTML: true,
 });
