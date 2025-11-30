@@ -1,0 +1,65 @@
+{
+  "common": {
+    "home": "Startseite",
+    "products": "Produkte",
+    "cart": "Warenkorb",
+    "checkout": "Kasse",
+    "account": "Mein Konto",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "search": "Suchen",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolgreich",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "back": "Zurueck",
+    "next": "Weiter"
+  },
+  "product": {
+    "addToCart": "In den Warenkorb",
+    "outOfStock": "Nicht verfuegbar",
+    "inStock": "Auf Lager",
+    "price": "Preis",
+    "quantity": "Menge",
+    "description": "Beschreibung",
+    "reviews": "Bewertungen"
+  },
+  "cart": {
+    "title": "Warenkorb",
+    "empty": "Ihr Warenkorb ist leer",
+    "continueShopping": "Weiter einkaufen",
+    "subtotal": "Zwischensumme",
+    "shipping": "Versand",
+    "total": "Gesamt",
+    "checkout": "Zur Kasse"
+  },
+  "checkout": {
+    "title": "Kasse",
+    "shippingAddress": "Lieferadresse",
+    "billingAddress": "Rechnungsadresse",
+    "paymentMethod": "Zahlungsart",
+    "placeOrder": "Bestellung aufgeben",
+    "thankYou": "Vielen Dank!"
+  },
+  "account": {
+    "title": "Mein Konto",
+    "orders": "Bestellungen",
+    "wishlist": "Wunschliste",
+    "settings": "Einstellungen"
+  },
+  "auth": {
+    "email": "E-Mail",
+    "password": "Passwort",
+    "login": "Anmelden",
+    "register": "Registrieren"
+  },
+  "footer": {
+    "about": "Ueber uns",
+    "contact": "Kontakt",
+    "terms": "AGB",
+    "privacy": "Datenschutz",
+    "imprint": "Impressum"
+  }
+}
