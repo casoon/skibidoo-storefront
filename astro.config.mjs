@@ -73,6 +73,17 @@ export default defineConfig({
               },
             },
           },
+          {
+            urlPattern: /\.(?:js|css)$/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "static-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
+              },
+            },
+          },
         ],
       },
       devOptions: {
@@ -90,33 +101,64 @@ export default defineConfig({
       // Code splitting configuration
       rollupOptions: {
         output: {
-          manualChunks: {
-            // Vendor chunk for external dependencies
-            vendor: ["htmx.org"],
-            // Alpine.js in its own chunk
-            alpine: ["alpinejs"],
+          // Manual chunks for better caching
+          manualChunks(id) {
+            // Vendor chunk for node_modules
+            if (id.includes("node_modules")) {
+              // Split large dependencies into separate chunks
+              if (id.includes("htmx.org")) {
+                return "htmx";
+              }
+              if (id.includes("alpinejs")) {
+                return "alpine";
+              }
+              // Group other vendor code
+              return "vendor";
+            }
+            // Split components into separate chunks
+            if (id.includes("/components/")) {
+              // Group by component type
+              if (id.includes("/fragments/")) {
+                return "fragments";
+              }
+              return "components";
+            }
           },
+          // Optimize chunk file names
+          chunkFileNames: "assets/[name]-[hash].js",
+          entryFileNames: "assets/[name]-[hash].js",
+          assetFileNames: "assets/[name]-[hash].[ext]",
         },
       },
-      // Increase chunk size warning limit
-      chunkSizeWarningLimit: 1000,
+      // Chunk size warning limit
+      chunkSizeWarningLimit: 500,
       // CSS code splitting
       cssCodeSplit: true,
-      // Minification
+      // Minification with esbuild (fastest)
       minify: "esbuild",
-      // Target modern browsers
+      // Target modern browsers for smaller bundles
       target: "es2022",
+      // Source maps for production debugging
+      sourcemap: false,
+      // Inline small assets
+      assetsInlineLimit: 4096,
     },
-    // Optimize deps
+    // Optimize deps for faster dev startup
     optimizeDeps: {
       include: ["htmx.org", "alpinejs"],
+      exclude: [],
+    },
+    // Enable CSS modules
+    css: {
+      devSourcemap: true,
     },
   },
-  // Prefetch configuration
+  // Prefetch configuration for faster navigation
   prefetch: {
     prefetchAll: false,
     defaultStrategy: "viewport",
   },
   // Compression
   compressHTML: true,
+  // Experimental features
 });

@@ -1,0 +1,117 @@
+---
+/**
+ * LazySection - Loads content only when visible in viewport
+ * Uses Intersection Observer for efficient lazy loading
+ */
+interface Props {
+  /** Unique ID for the section */
+  id: string;
+  /** Minimum height to prevent layout shift */
+  minHeight?: string;
+  /** Root margin for IntersectionObserver */
+  rootMargin?: string;
+  /** CSS classes for the container */
+  class?: string;
+  /** Show skeleton placeholder while loading */
+  skeleton?: boolean;
+  /** Number of skeleton items */
+  skeletonCount?: number;
+}
+
+const {
+  id,
+  minHeight = "200px",
+  rootMargin = "100px",
+  class: className = "",
+  skeleton = true,
+  skeletonCount = 3,
+} = Astro.props;
+---
+
+<div
+  id={id}
+  class={`lazy-section ${className}`}
+  data-root-margin={rootMargin}
+  style={`min-height: ${minHeight}`}
+>
+  {skeleton && (
+    <div class="lazy-section-placeholder">
+      {Array.from({ length: skeletonCount }).map((_, i) => (
+        <div class="skeleton-item skeleton" style="height: 80px; margin-bottom: 1rem; border-radius: 0.5rem;"></div>
+      ))}
+    </div>
+  )}
+  <template class="lazy-section-content">
+    <slot />
+  </template>
+</div>
+
+<style>
+  .lazy-section-placeholder {
+    padding: 1rem;
+  }
+  .lazy-section[data-loaded="true"] .lazy-section-placeholder {
+    display: none;
+  }
+  .lazy-section:not([data-loaded="true"]) .lazy-section-content {
+    display: none;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+</style>
+
+<script>
+  // Initialize lazy sections
+  function initLazySections() {
+    const sections = document.querySelectorAll('.lazy-section:not([data-loaded])');
+    
+    if (!('IntersectionObserver' in window)) {
+      // Fallback: load all immediately
+      sections.forEach(loadSection);
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadSection(entry.target as HTMLElement);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      rootMargin: '100px',
+    });
+
+    sections.forEach(section => observer.observe(section));
+  }
+
+  function loadSection(section: HTMLElement) {
+    const template = section.querySelector('template.lazy-section-content');
+    if (template) {
+      const content = template.content.cloneNode(true);
+      section.appendChild(content);
+      section.setAttribute('data-loaded', 'true');
+      
+      // Re-initialize HTMX for new content
+      if (window.htmx) {
+        window.htmx.process(section);
+      }
+    }
+  }
+
+  // Run on DOMContentLoaded and after HTMX swaps
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLazySections);
+  } else {
+    initLazySections();
+  }
+  
+  document.body.addEventListener('htmx:afterSwap', initLazySections);
+</script>
