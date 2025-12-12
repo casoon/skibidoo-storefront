@@ -52,69 +52,110 @@ export async function fetchProducts(params: {
   search?: string;
 }): Promise<{ products: Product[]; total: number }> {
   const query = new URLSearchParams();
-  if (params.page) query.set("page", String(params.page));
-  if (params.limit) query.set("limit", String(params.limit));
-  if (params.categoryId) query.set("category", params.categoryId);
-  if (params.search) query.set("search", params.search);
+  if (params.page) query.set("page[number]", String(params.page));
+  if (params.limit) query.set("page[size]", String(params.limit));
+  if (params.categoryId) query.set("filter[category]", params.categoryId);
+  if (params.search) query.set("filter[search]", params.search);
 
-  const response = await fetch(`${API_URL}/api/products?${query}`);
-  if (!response.ok) throw new Error("Failed to fetch products");
-  return response.json();
+  try {
+    const response = await fetch(`${API_URL}/api/v1/products?${query}`);
+    if (!response.ok) {
+      console.error(`API error: ${response.status}`);
+      return { products: [], total: 0 };
+    }
+    const data = await response.json();
+    return { 
+      products: data.data || [], 
+      total: data.meta?.total || 0 
+    };
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+    return { products: [], total: 0 };
+  }
 }
 
 export async function fetchProduct(slug: string): Promise<Product | null> {
-  const response = await fetch(`${API_URL}/api/products/${slug}`);
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error("Failed to fetch product");
-  return response.json();
+  try {
+    const response = await fetch(`${API_URL}/api/v1/products/${slug}`);
+    if (response.status === 404) return null;
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    console.error("Failed to fetch product:", error);
+    return null;
+  }
 }
 
 export async function fetchCategories(): Promise<Category[]> {
-  const response = await fetch(`${API_URL}/api/categories`);
-  if (!response.ok) throw new Error("Failed to fetch categories");
-  const data = await response.json();
-  return data.categories;
+  try {
+    const response = await fetch(`${API_URL}/api/v1/categories`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
+    return [];
+  }
 }
 
 export async function fetchCategory(slug: string): Promise<Category | null> {
-  const response = await fetch(`${API_URL}/api/categories/${slug}`);
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error("Failed to fetch category");
-  return response.json();
+  try {
+    const response = await fetch(`${API_URL}/api/v1/categories/${slug}`);
+    if (response.status === 404) return null;
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    console.error("Failed to fetch category:", error);
+    return null;
+  }
 }
 
 export async function getCart(cartId: string | null): Promise<Cart> {
-  const url = cartId ? `${API_URL}/api/cart?cartId=${cartId}` : `${API_URL}/api/cart`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Failed to fetch cart");
-  return response.json();
+  const url = cartId 
+    ? `${API_URL}/api/v1/cart/${cartId}` 
+    : `${API_URL}/api/v1/cart`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { id: "", items: [], subtotal: 0, shipping: 0, discount: 0, total: 0, itemCount: 0 };
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Failed to fetch cart:", error);
+    return { id: "", items: [], subtotal: 0, shipping: 0, discount: 0, total: 0, itemCount: 0 };
+  }
 }
 
 export async function addToCart(cartId: string | null, productId: string, quantity: number): Promise<Cart> {
-  const response = await fetch(`${API_URL}/api/cart/add`, {
+  const url = cartId 
+    ? `${API_URL}/api/v1/cart/${cartId}/items`
+    : `${API_URL}/api/v1/cart`;
+  const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cartId, productId, quantity }),
+    body: JSON.stringify({ productId, quantity }),
   });
   if (!response.ok) throw new Error("Failed to add to cart");
   return response.json();
 }
 
 export async function updateCartItem(cartId: string, itemId: string, quantity: number): Promise<Cart> {
-  const response = await fetch(`${API_URL}/api/cart/update`, {
+  const response = await fetch(`${API_URL}/api/v1/cart/${cartId}/items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cartId, itemId, quantity }),
+    body: JSON.stringify({ productId: itemId, quantity }),
   });
   if (!response.ok) throw new Error("Failed to update cart");
   return response.json();
 }
 
 export async function removeFromCart(cartId: string, itemId: string): Promise<Cart> {
-  const response = await fetch(`${API_URL}/api/cart/remove`, {
+  const response = await fetch(`${API_URL}/api/v1/cart/${cartId}/items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cartId, itemId }),
+    body: JSON.stringify({ productId: itemId, quantity: 0 }),
   });
   if (!response.ok) throw new Error("Failed to remove from cart");
   return response.json();
