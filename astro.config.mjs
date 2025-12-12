@@ -1,12 +1,15 @@
 import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
-import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 import AstroPWA from "@vite-pwa/astro";
 
 export default defineConfig({
   output: "server",
-  adapter: node({
-    mode: "standalone",
+  adapter: cloudflare({
+    imageService: "passthrough",
+    platformProxy: {
+      enabled: true,
+    },
   }),
   integrations: [
     tailwind(),
@@ -49,7 +52,7 @@ export default defineConfig({
         globPatterns: ["**/*.{css,js,html,svg,png,ico,txt,woff,woff2}"],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\./i,
+            urlPattern: /^https:\/\/skibidoo-core\.fly\.dev/i,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -98,67 +101,44 @@ export default defineConfig({
       },
     },
     build: {
-      // Code splitting configuration
       rollupOptions: {
         output: {
-          // Manual chunks for better caching
           manualChunks(id) {
-            // Vendor chunk for node_modules
             if (id.includes("node_modules")) {
-              // Split large dependencies into separate chunks
               if (id.includes("htmx.org")) {
                 return "htmx";
               }
-              if (id.includes("alpinejs")) {
-                return "alpine";
-              }
-              // Group other vendor code
               return "vendor";
             }
-            // Split components into separate chunks
             if (id.includes("/components/")) {
-              // Group by component type
               if (id.includes("/fragments/")) {
                 return "fragments";
               }
               return "components";
             }
           },
-          // Optimize chunk file names
           chunkFileNames: "assets/[name]-[hash].js",
           entryFileNames: "assets/[name]-[hash].js",
           assetFileNames: "assets/[name]-[hash].[ext]",
         },
       },
-      // Chunk size warning limit
       chunkSizeWarningLimit: 500,
-      // CSS code splitting
       cssCodeSplit: true,
-      // Minification with esbuild (fastest)
       minify: "esbuild",
-      // Target modern browsers for smaller bundles
       target: "es2022",
-      // Source maps for production debugging
       sourcemap: false,
-      // Inline small assets
       assetsInlineLimit: 4096,
     },
-    // Optimize deps for faster dev startup
     optimizeDeps: {
-      include: ["htmx.org", "alpinejs"],
-      exclude: [],
+      include: ["htmx.org"],
     },
-    // Enable CSS modules
     css: {
       devSourcemap: true,
     },
   },
-  // Prefetch configuration for faster navigation
   prefetch: {
     prefetchAll: false,
     defaultStrategy: "viewport",
   },
-  // Compression
   compressHTML: true,
-  // Experimental features
 });
