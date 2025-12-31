@@ -1,8 +1,13 @@
 name = "skibidoo-storefront"
+main = "dist/_worker.js/index.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-pages_build_output_dir = "dist"
+assets = { directory = "./dist", binding = "ASSETS" }
 
 [vars]
-API_URL = "http://localhost:3000"
+API_URL = "https://skibidoo-core.fly.dev"
+
+[dev]
+port = 4321
+local_protocol = "http"
