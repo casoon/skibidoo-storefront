@@ -1,5 +1,5 @@
 name = "skibidoo-storefront"
-main = "dist/_worker.js/index.js"
+account_id = "817ec8f792eea2e272a0a6cf03ccb57d"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
