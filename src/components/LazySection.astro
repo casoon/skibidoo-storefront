@@ -74,7 +74,7 @@ const {
     
     if (!('IntersectionObserver' in window)) {
       // Fallback: load all immediately
-      sections.forEach(loadSection);
+      sections.forEach(section => loadSection(section as HTMLElement));
       return;
     }
 
@@ -93,7 +93,7 @@ const {
   }
 
   function loadSection(section: HTMLElement) {
-    const template = section.querySelector('template.lazy-section-content');
+    const template = section.querySelector('template.lazy-section-content') as HTMLTemplateElement | null;
     if (template) {
       const content = template.content.cloneNode(true);
       section.appendChild(content);

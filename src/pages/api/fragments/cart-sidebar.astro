@@ -1,5 +1,5 @@
 ---
-import CartSidebar from "@/components/fragments/CartSidebar.astro";
+import CartSidebarComponent from "@/components/fragments/CartSidebar.astro";
 
 const cartId = Astro.cookies.get("cartId")?.value;
 const API_URL = import.meta.env.API_URL || "http://localhost:3000";
@@ -22,4 +22,4 @@ if (cartId) {
   }
 }
 ---
-<CartSidebar items={items} subtotal={subtotal} itemCount={itemCount} />
+<CartSidebarComponent items={items} subtotal={subtotal} itemCount={itemCount} />
