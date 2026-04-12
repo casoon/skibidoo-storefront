@@ -16,3 +16,198 @@
 
   --font-family-sans: Inter, system-ui, sans-serif;
 }
+
+/* ── Webspire Token Bridge ── */
+:root {
+  --ws-color-primary: #c026d3;
+  --ws-color-primary-hover: #a21caf;
+  --ws-color-primary-soft: #fae8ff;
+  --ws-color-primary-text: #ffffff;
+  --ws-color-text: #111827;
+  --ws-color-text-soft: #374151;
+  --ws-color-text-muted: #6b7280;
+  --ws-color-surface: #ffffff;
+  --ws-color-surface-alt: #f9fafb;
+  --ws-color-border: #e5e7eb;
+  --ws-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --ws-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --ws-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* ── Webspire: Light Rays (Hero atmosphere) ── */
+.light-rays {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 0%, rgb(255 255 255 / 0.18), transparent 30%),
+    linear-gradient(
+      180deg,
+      var(--rays-top, oklch(48% 0.28 313)),
+      var(--rays-bottom, oklch(28% 0.16 313))
+    );
+}
+
+.light-rays::before,
+.light-rays::after {
+  content: "";
+  position: absolute;
+  top: -35%;
+  left: 50%;
+  width: var(--rays-width, 34rem);
+  height: 160%;
+  transform-origin: top center;
+  filter: blur(var(--rays-blur, 10px));
+  pointer-events: none;
+}
+
+.light-rays::before {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.28), transparent 72%);
+  clip-path: polygon(48% 0, 52% 0, 100% 100%, 0 100%);
+  animation: light-rays-sway var(--rays-speed, 14s) ease-in-out infinite;
+}
+
+.light-rays::after {
+  background: linear-gradient(180deg, rgb(232 121 249 / 0.22), transparent 76%);
+  clip-path: polygon(43% 0, 57% 0, 88% 100%, 12% 100%);
+  animation: light-rays-sway calc(var(--rays-speed, 14s) * 1.2) ease-in-out infinite reverse;
+}
+
+@keyframes light-rays-sway {
+  0%, 100% { transform: translateX(-50%) rotate(-7deg); }
+  50%       { transform: translateX(-50%) rotate(6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .light-rays::before,
+  .light-rays::after { animation: none; }
+}
+
+/* ── Webspire: Hover Lift ── */
+.hover-lift {
+  --lift-distance: -5px;
+  --lift-shadow: 0 12px 28px oklch(0 0 0 / 0.14);
+  --lift-duration: 0.22s;
+  transition:
+    transform var(--lift-duration) cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow var(--lift-duration) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(var(--lift-distance));
+  box-shadow: var(--lift-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift { transition: none; }
+}
+
+/* ── Webspire: Cursor Spotlight ── */
+.cursor-spotlight {
+  --spotlight-color: oklch(0.55 0.22 313 / 0.10);
+  --spotlight-size: 360px;
+  --spotlight-radius: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--spotlight-radius);
+}
+
+.cursor-spotlight-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    var(--spotlight-size) circle at var(--cx, 50%) var(--cy, 50%),
+    var(--spotlight-color),
+    transparent
+  );
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  will-change: background;
+  z-index: 1;
+}
+
+.cursor-spotlight:hover .cursor-spotlight-layer {
+  opacity: 1;
+}
+
+/* ── Webspire: Thumbnail Hover Scrim ── */
+.thumbnail-hover-scrim {
+  --scrim-color: oklch(0.15 0.01 313 / 0.45);
+  --scrim-speed: 0.28s;
+  --thumb-radius: 0.5rem;
+  position: relative;
+  overflow: hidden;
+  clip-path: inset(0 0 0 0 round var(--thumb-radius));
+  transform: translate3d(0, 0, 0);
+}
+
+.thumbnail-hover-scrim img {
+  transition: transform var(--scrim-speed) ease;
+}
+
+.thumbnail-hover-scrim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scrim-color);
+  opacity: 0;
+  transition: opacity var(--scrim-speed) ease;
+  z-index: 1;
+}
+
+.thumbnail-hover-scrim:hover img {
+  transform: scale(1.06);
+}
+
+.thumbnail-hover-scrim:hover::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumbnail-hover-scrim img,
+  .thumbnail-hover-scrim::after { transition: none; }
+}
+
+/* ── Webspire: Tile Pop-In ── */
+.tile-pop-in {
+  --tile-pop-delay: 0ms;
+  --tile-pop-duration: 400ms;
+  animation: tile-pop-in var(--tile-pop-duration) cubic-bezier(0.16, 1, 0.3, 1)
+    var(--tile-pop-delay) both;
+}
+
+@keyframes tile-pop-in {
+  from { opacity: 0; transform: scale(0.93) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile-pop-in { animation: none; }
+}
+
+/* ── Webspire: Text Line Rise ── */
+.text-line-rise {
+  --rise-distance: 110%;
+  --rise-speed: 0.65s;
+  --rise-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.text-line-rise > * {
+  transform: translateY(var(--rise-distance));
+  opacity: 0;
+  transition:
+    transform var(--rise-speed) var(--rise-easing),
+    opacity var(--rise-speed) ease;
+}
+
+.text-line-rise.is-visible > * {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-line-rise > * { transform: none; opacity: 1; transition: none; }
+}

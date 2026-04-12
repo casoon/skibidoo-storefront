@@ -220,6 +220,37 @@ const {
           document.body._x_dataStack?.[0] && (document.body._x_dataStack[0].cartOpen = true);
         }
       });
+
+      // Webspire: cursor spotlight — update --cx/--cy on all .cursor-spotlight elements
+      function initCursorSpotlight(root) {
+        root.querySelectorAll('.cursor-spotlight').forEach(function(el) {
+          if (el._wsSpotlight) return;
+          el._wsSpotlight = true;
+          el.addEventListener('mousemove', function(e) {
+            var rect = el.getBoundingClientRect();
+            el.style.setProperty('--cx', (e.clientX - rect.left) + 'px');
+            el.style.setProperty('--cy', (e.clientY - rect.top) + 'px');
+          });
+        });
+      }
+
+      // Webspire: text-line-rise — add .is-visible after first paint
+      function initTextLineRise(root) {
+        root.querySelectorAll('.text-line-rise:not(.is-visible)').forEach(function(el) {
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() { el.classList.add('is-visible'); });
+          });
+        });
+      }
+
+      // Init on load
+      initCursorSpotlight(document);
+      initTextLineRise(document);
+
+      // Re-init after HTMX swaps new content into the DOM
+      document.body.addEventListener('htmx:afterSettle', function(e) {
+        initCursorSpotlight(e.detail.elt || document);
+      });
     </script>
   </body>
 </html>

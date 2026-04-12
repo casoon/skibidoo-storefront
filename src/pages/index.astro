@@ -11,33 +11,59 @@ const priorityCount = 4;
 ---
 
 <BaseLayout title="Startseite">
-  <!-- Hero - LCP candidate, optimize for fast render -->
-  <section class="bg-gradient-to-r from-primary-600 to-primary-800 py-20 text-white">
-    <div class="mx-auto max-w-7xl px-4 text-center">
-      <h1 class="text-4xl font-bold md:text-5xl">Willkommen bei Skibidoo</h1>
-      <p class="mt-4 text-xl text-primary-100">Entdecken Sie hochwertige Produkte zu fairen Preisen</p>
-      <a
-        href="/category/alle"
-        class="mt-8 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-primary-600 transition-colors hover:bg-primary-50"
-      >
-        Jetzt shoppen
-      </a>
+
+  <!-- ── Hero ── -->
+  <section class="light-rays py-28 text-white">
+    <div class="relative z-10 mx-auto max-w-7xl px-4 text-center">
+      <p class="text-sm font-semibold uppercase tracking-widest text-fuchsia-200">
+        Dein Online-Shop
+      </p>
+      <div class="text-line-rise mt-3">
+        <h1 class="text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+          Willkommen bei&nbsp;Skibidoo
+        </h1>
+      </div>
+      <p class="mt-6 text-lg text-fuchsia-100 md:text-xl">
+        Entdecke hochwertige Produkte zu fairen Preisen
+      </p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <a
+          href="/category/alle"
+          class="rounded-xl bg-white px-8 py-3 font-semibold text-primary-700 shadow-lg transition hover:bg-primary-50 hover:shadow-xl"
+        >
+          Jetzt shoppen
+        </a>
+        <a
+          href="/category/alle"
+          class="rounded-xl border border-white/30 px-8 py-3 font-medium text-white backdrop-blur-sm transition hover:bg-white/10"
+        >
+          Alle Kategorien
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- Categories - fixed height prevents CLS -->
-  <section class="py-16">
+  <!-- ── Kategorien ── -->
+  <section class="bg-white py-16">
     <div class="mx-auto max-w-7xl px-4">
-      <h2 class="mb-8 text-2xl font-bold text-gray-900">Kategorien</h2>
+      <div class="mb-8">
+        <p class="text-sm font-semibold uppercase tracking-wide text-primary-600">Sortiment</p>
+        <h2 class="mt-1 text-2xl font-bold text-gray-900">Kategorien</h2>
+      </div>
       <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {categories.slice(0, 4).map((category) => (
+        {categories.slice(0, 4).map((category, i) => (
           <a
             href={`/category/${category.slug}`}
-            class="group relative overflow-hidden rounded-lg bg-gray-100 p-8 text-center transition-colors hover:bg-primary-50 min-h-[120px]"
+            class="hover-lift cursor-spotlight group relative flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-8 text-center"
           >
-            <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600">{category.name}</h3>
+            <div class="cursor-spotlight-layer"></div>
+            <h3 class="relative z-[2] text-lg font-semibold text-gray-900 group-hover:text-primary-600">
+              {category.name}
+            </h3>
             {category.description && (
-              <p class="mt-2 text-sm text-gray-500 line-clamp-2">{category.description}</p>
+              <p class="relative z-[2] mt-2 line-clamp-2 text-sm text-gray-500">
+                {category.description}
+              </p>
             )}
           </a>
         ))}
@@ -45,65 +71,83 @@ const priorityCount = 4;
     </div>
   </section>
 
-  <!-- Featured Products -->
-  <section class="bg-gray-100 py-16">
+  <!-- ── Beliebte Produkte ── -->
+  <section class="bg-gray-50 py-16">
     <div class="mx-auto max-w-7xl px-4">
-      <div class="mb-8 flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-gray-900">Beliebte Produkte</h2>
-        <a href="/category/alle" class="text-primary-600 hover:underline">Alle anzeigen &rarr;</a>
+      <div class="mb-10 flex items-end justify-between">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary-600">Empfohlen</p>
+          <h2 class="mt-1 text-2xl font-bold text-gray-900">Beliebte Produkte</h2>
+        </div>
+        <a href="/category/alle" class="text-sm text-primary-600 hover:underline">
+          Alle anzeigen →
+        </a>
       </div>
       <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
         {products.map((product, index) => (
-          <ProductCard 
-            product={product} 
-            priority={index < priorityCount}
-          />
+          <div class="tile-pop-in" style={`--tile-pop-delay: ${index * 50}ms`}>
+            <ProductCard product={product} priority={index < priorityCount} />
+          </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Trust Badges - use content-visibility for below-fold optimization -->
-  <section class="py-16" style="content-visibility: auto; contain-intrinsic-size: 0 300px;">
+  <!-- ── Trust Badges ── -->
+  <section class="border-t bg-white py-12" style="content-visibility: auto; contain-intrinsic-size: 0 200px;">
     <div class="mx-auto max-w-7xl px-4">
-      <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
-        <div class="text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
+
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 class="font-semibold">Gepruefte Qualitaet</h3>
-          <p class="mt-2 text-sm text-gray-500">Alle Produkte sorgfaeltig geprueft</p>
+          <div>
+            <h3 class="font-semibold text-gray-900">Geprüfte Qualität</h3>
+            <p class="text-sm text-gray-500">Alle Produkte sorgfältig geprüft</p>
+          </div>
         </div>
-        <div class="text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           </div>
-          <h3 class="font-semibold">Schneller Versand</h3>
-          <p class="mt-2 text-sm text-gray-500">Versand innerhalb von 24h</p>
+          <div>
+            <h3 class="font-semibold text-gray-900">Schneller Versand</h3>
+            <p class="text-sm text-gray-500">Versand innerhalb von 24h</p>
+          </div>
         </div>
-        <div class="text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h3 class="font-semibold">Sicher bezahlen</h3>
-          <p class="mt-2 text-sm text-gray-500">SSL-verschluesselte Zahlung</p>
+          <div>
+            <h3 class="font-semibold text-gray-900">Sicher bezahlen</h3>
+            <p class="text-sm text-gray-500">SSL-verschlüsselte Zahlung</p>
+          </div>
         </div>
-        <div class="text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
             </svg>
           </div>
-          <h3 class="font-semibold">14 Tage Rueckgabe</h3>
-          <p class="mt-2 text-sm text-gray-500">Kostenlose Ruecksendung</p>
+          <div>
+            <h3 class="font-semibold text-gray-900">14 Tage Rückgabe</h3>
+            <p class="text-sm text-gray-500">Kostenlose Rücksendung</p>
+          </div>
         </div>
+
       </div>
     </div>
   </section>
+
 </BaseLayout>
