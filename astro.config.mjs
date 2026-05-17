@@ -2,9 +2,36 @@ import { defineConfig } from "astro/config";
 import cloudflare from "@astrojs/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import postAudit from "@casoon/astro-post-audit";
 
 export default defineConfig({
+  trailingSlash: 'always',
   output: "server",
+  integrations: [
+    postAudit({
+      checkAssets: true,
+      checkStructuredData: true,
+      checkSecurity: true,
+      checkDuplicates: true,
+      rules: {
+        filters: { exclude: ["404.html"] },
+        canonical: { self_reference: true },
+        headings: { no_skip: true },
+        html_basics: {
+          meta_description_required: true,
+          title_max_length: 100,
+          meta_description_max_length: 220,
+        },
+        opengraph: {
+          require_og_title: true,
+          require_og_description: true,
+          require_og_image: true,
+        },
+        a11y: { require_skip_link: true },
+        links: { check_fragments: true },
+      },
+    }),
+  ],
   adapter: cloudflare({
     imageService: "passthrough",
     platformProxy: {
